@@ -32,13 +32,13 @@ export default function useAuthenticate(
       setLoading(true);
       setError(undefined);
       setAuthMethod(undefined);
-      console.log("hit authwithgogle");
+
       try {
         const result: AuthMethod =
           (await authenticateWithGoogle(
             redirectUri
           )) as AuthMethod;
-        console.log("result of authmethod", result);
+
         setAuthMethod(result);
       } catch (err: unknown) {
         setError(err as Error);

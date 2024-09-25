@@ -12,21 +12,28 @@ import {
 } from "@lit-protocol/lit-auth-client";
 import { LitNodeClient } from "@lit-protocol/lit-node-client";
 import {
+  decryptToString,
+  encryptString,
+} from "@lit-protocol/encryption";
+import {
   AuthMethod,
+  EncryptResponse,
   // GetSessionSigsProps,
   IRelayPKP,
   LIT_NETWORKS_KEYS,
   LitAbility,
   SessionSigs,
+  SessionSigsMap,
 } from "@lit-protocol/types";
 
+let rootSessionSigs: SessionSigsMap;
 export const DOMAIN =
   process.env.NEXT_PUBLIC_DOMAIN || "localhost";
 
 export const ORIGIN =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
     ? `https://${DOMAIN}`
-    : `http://${DOMAIN}:3001`;
+    : `http://${DOMAIN}:3000`;
 
 export const SELECTED_LIT_NETWORK = ((process.env
   .NEXT_PUBLIC_LIT_NETWORK as string) ||
@@ -40,7 +47,6 @@ export const litNodeClient: LitNodeClient =
   });
 
 litNodeClient.connect();
-
 export const litAuthClient: LitAuthClient =
   new LitAuthClient({
     litRelayConfig: {
@@ -73,6 +79,64 @@ export async function authenticateWithGoogle(
     );
   const authMethod = await googleProvider.authenticate();
   return authMethod;
+}
+
+export function encryptMessages(
+  message: string,
+  address: string
+): Promise<EncryptResponse> {
+  const accessControlConditions = [
+    {
+      contractAddress: "",
+      standardContractType: "",
+      chain: "ethereum", // Define the blockchain
+      method: "",
+      parameters: [":userAddress"], // Who can decrypt (the user's Ethereum address or other conditions)
+      returnValueTest: {
+        comparator: "=",
+        value: address,
+      },
+    },
+  ];
+
+  const data = encryptString(
+    {
+      dataToEncrypt: message,
+      accessControlConditions: accessControlConditions,
+    },
+    litNodeClient
+  );
+
+  return data;
+}
+
+export function decryptMessages(
+  { ciphertext, dataToEncryptHash }: EncryptResponse,
+  address: string
+) {
+  const accessControlConditions = [
+    {
+      contractAddress: "",
+      standardContractType: "",
+      chain: "ethereum", // Define the blockchain
+      method: "",
+      parameters: [":userAddress"], // Who can decrypt (the user's Ethereum address or other conditions)
+      returnValueTest: {
+        comparator: "=",
+        value: address,
+      },
+    },
+  ];
+  return decryptToString(
+    {
+      accessControlConditions,
+      chain: "ethereum",
+      sessionSigs: rootSessionSigs,
+      ciphertext,
+      dataToEncryptHash,
+    },
+    litNodeClient
+  );
 }
 
 /**
@@ -227,7 +291,7 @@ export async function getSessionSigs({
           },
         ],
       });
-    console.log("SESSIONS SIGS", sessionSigs);
+    rootSessionSigs = sessionSigs;
     return sessionSigs;
   } else {
     throw new Error(

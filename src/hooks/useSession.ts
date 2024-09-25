@@ -20,7 +20,9 @@ export default function useSession() {
   useEffect(() => {
     const storedSession = fetchSessionSigs();
     if (storedSession) {
-      const session = JSON.parse(storedSession);
+      const session = JSON.parse(
+        storedSession as unknown as string
+      );
       const isExpired =
         new Date(session.expiration) < new Date();
       if (!isExpired) {

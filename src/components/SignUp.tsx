@@ -2,21 +2,31 @@
 import { ORIGIN } from "@/utils/lit";
 import { GoogleSignIn } from "./GoogleSignIn";
 import useAuthenticate from "@/hooks/useAuthenticate";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAccounts from "@/hooks/useAccounts";
 import useSession from "@/hooks/useSession";
 import Loading from "./Loading";
 import { AuthMethodType } from "@lit-protocol/constants";
 import { useRouter } from "next/navigation";
+import { useEncrypt } from "@/hooks/useEncrypt";
 
 export default function SignUp() {
   const redirectUri = ORIGIN;
 
+  const [message] = useState<string>("Free the web!");
   const {
     authMethod,
     loading: authLoading,
     error: authError,
   } = useAuthenticate(redirectUri);
+
+  const {
+    encrypt,
+    decrypt,
+    isEncrypted,
+    encryptedData,
+    decryptedMessage,
+  } = useEncrypt();
   const {
     createAccount,
 
@@ -79,7 +89,7 @@ export default function SignUp() {
   if (accountsLoading) {
     return (
       <Loading
-        copy={"Creating your account..."}
+        copy={"Fetching your account..."}
         error={error}
       />
     );
@@ -95,7 +105,34 @@ export default function SignUp() {
   }
 
   if (currentAccount && sessionSigs) {
-    return <>CurrentAccount: {currentAccount.ethAddress}</>;
+    return (
+      <>
+        <p>CurrentAccount: {currentAccount.ethAddress}</p>
+        <p>
+          {isEncrypted
+            ? encryptedData.ciphertext
+            : decryptedMessage}
+        </p>
+
+        {isEncrypted ? (
+          <button
+            onClick={() =>
+              decrypt(currentAccount.ethAddress)
+            }
+          >
+            decrypt
+          </button>
+        ) : (
+          <button
+            onClick={() =>
+              encrypt(message, currentAccount.ethAddress)
+            }
+          >
+            ENCRYPT MESSAGE
+          </button>
+        )}
+      </>
+    );
   }
   return (
     <>

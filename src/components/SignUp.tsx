@@ -9,11 +9,14 @@ import Loading from "./Loading";
 import { AuthMethodType } from "@lit-protocol/constants";
 import { useRouter } from "next/navigation";
 import { useEncrypt } from "@/hooks/useEncrypt";
+import { Snippet } from "@nextui-org/snippet";
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
 
 export default function SignUp() {
   const redirectUri = ORIGIN;
 
-  const [message] = useState<string>("Free the web!");
+  const [message, setMessage] = useState<string>();
   const {
     authMethod,
     loading: authLoading,
@@ -107,36 +110,49 @@ export default function SignUp() {
   if (currentAccount && sessionSigs) {
     return (
       <>
-        <p>CurrentAccount: {currentAccount.ethAddress}</p>
-        <p>
-          {isEncrypted
-            ? encryptedData.ciphertext
-            : decryptedMessage}
-        </p>
+        <Snippet size="sm" className="snippet">
+          {currentAccount.ethAddress}
+        </Snippet>
 
-        {isEncrypted ? (
-          <button
+        <>
+          <Input
+            type={isEncrypted ? "password" : "text"}
+            label="secret"
+            isRequired
+            size="md"
+            variant="underlined"
+            className="mx-auto mt-10 w-[1/2]"
+            defaultValue={encryptedData.ciphertext}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <Button
+            color={isEncrypted ? "success" : "danger"}
+            className="mx-auto mt-10 max-w-32"
+            disabled={!message}
             onClick={() =>
-              decrypt(currentAccount.ethAddress)
+              isEncrypted
+                ? decrypt(currentAccount.ethAddress)
+                : encrypt(
+                    message as string,
+                    currentAccount.ethAddress
+                  )
             }
           >
-            decrypt
-          </button>
-        ) : (
-          <button
-            onClick={() =>
-              encrypt(message, currentAccount.ethAddress)
-            }
-          >
-            ENCRYPT MESSAGE
-          </button>
-        )}
+            {isEncrypted ? "Decrypt" : "Encrypt"}
+          </Button>
+        </>
       </>
     );
   }
   return (
     <>
-      <GoogleSignIn />
+      <p className=" font-light size text-md text-center">
+        Use Your Google Auth to Generate a PKP with ease by
+        signing in below
+      </p>
+      <div className="mx-auto mt-10">
+        <GoogleSignIn />
+      </div>
     </>
   );
 }

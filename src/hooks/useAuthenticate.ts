@@ -15,15 +15,6 @@ export default function useAuthenticate(
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
 
-  // wagmi hook
-  //   const { connectAsync } = useConnect({
-  //     mutation: {
-  //       onError: (err: unknown) => {
-  //         setError(err as Error);
-  //       },
-  //     },
-  //   });
-
   /**
    * Handle redirect from Google OAuth
    */
@@ -49,13 +40,10 @@ export default function useAuthenticate(
 
   useEffect(() => {
     // Check if user is redirected from social login
-    console.log("hit initial useeffect", redirectUri);
     if (redirectUri && isSignInRedirect(redirectUri)) {
-      console.log("check provider from url");
       // If redirected, authenticate with social provider
       const providerName = getProviderFromUrl();
       if (providerName === "google") {
-        console.log("redirecting");
         authWithGoogle();
       }
     }

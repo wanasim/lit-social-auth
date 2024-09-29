@@ -23,13 +23,8 @@ export default function SignUp() {
     error: authError,
   } = useAuthenticate(redirectUri);
 
-  const {
-    encrypt,
-    decrypt,
-    isEncrypted,
-    encryptedData,
-    decryptedMessage,
-  } = useEncrypt();
+  const { encrypt, decrypt, isEncrypted, encryptedData } =
+    useEncrypt();
   const {
     createAccount,
 

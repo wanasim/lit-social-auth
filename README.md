@@ -12,7 +12,7 @@ Lit Secret Messages is a decentralized application (dApp) that enables users to 
 
 ## Demo
 
-To see a live demo, please visit [lit.wnasim.dev](lit.wnasim.dev).
+To see a live demo, please visit [lit.wnasim.dev](https://lit.wnasim.dev).
 
 ![alt text](/image.png)
 ![alt text](/image-1.png)
